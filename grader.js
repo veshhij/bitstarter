@@ -12,6 +12,7 @@ DOM parsing. References:
    - http://en.wikipedia.org/wiki/JSON
    - https://developer.mozilla.org/en-US/docs/JSON
    - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2 */
+
 var fs = require('fs'); 
 var program = require('commander'); 
 var cheerio = require('cheerio'); 
@@ -52,7 +53,9 @@ var checkUrlFile = function(urlfile, checksfile) {
 		this.retry(5000); // try again after 5 sec
 	} else {
 		fs.writeFileSync(DOWNLOADED_FILE_DEFAULT, result);
-		return checkHtmlFile(DOWNLOADED_FILE_DEFAULT, checksfile)
+		var out = checkHtmlFile(DOWNLOADED_FILE_DEFAULT, checksfile);
+		fs.unlinkSync(DOWNLOADED_FILE_DEFAULT);
+		return out;
 	}
 	} );
 };
@@ -67,8 +70,8 @@ if(require.main == module) {
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
         .option('-u, --url <url_file>', 'Path to remote index.html')
         .parse(process.argv);
-	var checkJson;
-	if (program.url) checkJson = checkUrlFile(program.url, program.checks);
+    var checkJson;
+    if (program.url) checkJson = checkUrlFile(program.url, program.checks);
     if (program.file) checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
